@@ -1,7 +1,7 @@
-from YoloRTrain.yolor.utils.google_utils import *
-from YoloRTrain.yolor.utils.layers import *
-from YoloRTrain.yolor.utils.parse_config import *
-from YoloRTrain.yolor.utils import torch_utils
+from infer_yolor.yolor.utils.google_utils import *
+from infer_yolor.yolor.utils.layers import *
+from infer_yolor.yolor.utils.parse_config import *
+from infer_yolor.yolor.utils import torch_utils
 
 ONNX_EXPORT = False
 

@@ -17,9 +17,9 @@ import numpy as np
 import torch
 import yaml
 
-from YoloRTrain.yolor.utils.google_utils import gsutil_getsize
-from YoloRTrain.yolor.utils.metrics import fitness, fitness_p, fitness_r, fitness_ap50, fitness_ap, fitness_f
-from YoloRTrain.yolor.utils.torch_utils import init_torch_seeds
+from infer_yolor.yolor.utils.google_utils import gsutil_getsize
+from infer_yolor.yolor.utils.metrics import fitness, fitness_p, fitness_r, fitness_ap50, fitness_ap, fitness_f
+from infer_yolor.yolor.utils.torch_utils import init_torch_seeds
 import torchvision
 
 # Set printoptions

@@ -23,8 +23,8 @@ from copy import deepcopy
 from pycocotools import mask as maskUtils
 from torchvision.utils import save_image
 
-from YoloRTrain.yolor.utils.general import xyxy2xywh, xywh2xyxy
-from YoloRTrain.yolor.utils.torch_utils import torch_distributed_zero_first
+from infer_yolor.yolor.utils.general import xyxy2xywh, xywh2xyxy
+from infer_yolor.yolor.utils.torch_utils import torch_distributed_zero_first
 
 # Parameters
 help_url = 'https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data'

@@ -3,8 +3,8 @@
 import torch
 import torch.nn as nn
 
-from YoloRTrain.yolor.utils.general import bbox_iou
-from YoloRTrain.yolor.utils.torch_utils import is_parallel
+from infer_yolor.yolor.utils.general import bbox_iou
+from infer_yolor.yolor.utils.torch_utils import is_parallel
 
 
 def smooth_BCE(eps=0.1):  # https://github.com/ultralytics/yolov3/issues/238#issuecomment-598028441
