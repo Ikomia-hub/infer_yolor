@@ -236,7 +236,7 @@ class YoloRProcessFactory(dataprocess.CTaskFactory):
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
         self.info.version = "1.0.0"
-        # self.info.iconPath = "your path to a specific icon"
+        self.info.iconPath = "icons/icon.png"
         self.info.article = "You Only Learn One Representation: Unified Network for Multiple Tasks"
         self.info.journal = "Arxiv"
         self.info.year = 2021
