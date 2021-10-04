@@ -10,22 +10,24 @@ import torch
 import torch.backends.cudnn as cudnn
 from numpy import random
 
-from YoloRTrain.utils.google_utils import attempt_load
-from YoloRTrain.utils.datasets import LoadStreams, LoadImages
-from YoloRTrain.utils.general import (
+from infer_yolor.yolor.utils.google_utils import attempt_load
+from infer_yolor.yolor.utils.datasets import LoadStreams, LoadImages
+from infer_yolor.yolor.utils.general import (
     check_img_size, non_max_suppression, apply_classifier, scale_coords, xyxy2xywh, strip_optimizer)
-from YoloRTrain.utils.plots import plot_one_box
-from YoloRTrain.utils.torch_utils import select_device, load_classifier, time_synchronized
+from infer_yolor.yolor.utils.plots import plot_one_box
+from infer_yolor.yolor.utils.torch_utils import select_device, load_classifier, time_synchronized
 
-from YoloRTrain.models.models import *
-from YoloRTrain.utils.datasets import *
-from YoloRTrain.utils.general import *
+from infer_yolor.yolor.models.models import *
+from infer_yolor.yolor.utils.datasets import *
+from infer_yolor.yolor.utils.general import *
+
 
 def load_classes(path):
     # Loads *.names file at 'path'
     with open(path, 'r') as f:
         names = f.read().split('\n')
     return list(filter(None, names))  # filter removes empty strings (such as last line)
+
 
 def detect(save_img=False):
     out, source, weights, view_img, save_txt, imgsz, cfg, names = \

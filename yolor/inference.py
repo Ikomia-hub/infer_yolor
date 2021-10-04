@@ -4,9 +4,9 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from YoloRTrain.yolor.utils.torch_utils import select_device
-from YoloRTrain.yolor.models.models import *
-from YoloRTrain.yolor.utils.plots import plot_one_box
+from infer_yolor.yolor.utils.torch_utils import select_device
+from infer_yolor.yolor.models.models import *
+from infer_yolor.yolor.utils.plots import plot_one_box
 
 
 def load_image(path_img,img_size,auto_size):
@@ -21,6 +21,7 @@ def load_image(path_img,img_size,auto_size):
     img = np.ascontiguousarray(img)
 
     return path_img, img, img0
+
 
 def infere(model,img,im0,device,names,conf_thres,iou_thres):
     half = device.type != 'cpu'  # half precision only supported on CUDA

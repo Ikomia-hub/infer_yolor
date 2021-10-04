@@ -18,9 +18,8 @@
 
 from ikomia import core, dataprocess
 from ikomia.utils import pyqtutils, qtconversion
-from YoloR.YoloR_process import YoloRParam
-
-#PyQt GUI framework
+from infer_yolor.infer_yolor_process import YoloRParam
+# PyQt GUI framework
 from PyQt5.QtWidgets import *
 
 
@@ -53,7 +52,6 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         self.combo_model.addItem("yolor_p6")
         self.combo_model.addItem("yolor_w6")
         self.combo_model.setCurrentText(self.parameters.model_name)
-
 
         # Model weights
         self.label_model_path = QLabel("Model path")
@@ -108,7 +106,6 @@ class YoloRWidget(core.CWorkflowTaskWidget):
             self.browse_cfg.setVisible(True)
             self.label_cfg.setVisible(True)
 
-
     def onApply(self):
         # Apply button clicked slot
         # Get parameters from widget
@@ -136,7 +133,7 @@ class YoloRWidgetFactory(dataprocess.CWidgetFactory):
     def __init__(self):
         dataprocess.CWidgetFactory.__init__(self)
         # Set the name of the process -> it must be the same as the one declared in the process factory class
-        self.name = "YoloR"
+        self.name = "infer_yolor"
 
     def create(self, param):
         # Create widget object

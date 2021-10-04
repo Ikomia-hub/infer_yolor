@@ -23,17 +23,17 @@ from ikomia import dataprocess
 # - Interface class to integrate the process with Ikomia application
 # - Inherits PyDataProcess.CPluginProcessInterface from Ikomia API
 # --------------------
-class YoloR(dataprocess.CPluginProcessInterface):
+class IkomiaPlugin(dataprocess.CPluginProcessInterface):
 
     def __init__(self):
         dataprocess.CPluginProcessInterface.__init__(self)
 
     def getProcessFactory(self):
         # Instantiate process object
-        from YoloR.YoloR_process import YoloRProcessFactory
+        from infer_yolor.infer_yolor_process import YoloRProcessFactory
         return YoloRProcessFactory()
 
     def getWidgetFactory(self):
         # Instantiate associated widget object
-        from YoloR.YoloR_widget import YoloRWidgetFactory
+        from infer_yolor.infer_yolor_widget import YoloRWidgetFactory
         return YoloRWidgetFactory()

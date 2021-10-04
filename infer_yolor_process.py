@@ -22,15 +22,14 @@ import torch
 from pathlib import Path
 import os
 
-from YoloR.yolor.utils.google_utils import gdrive_download
-from YoloR.yolor.models.models import *
-from YoloR.yolor.utils.torch_utils import select_device
+from infer_yolor.yolor.utils.google_utils import gdrive_download
+from infer_yolor.yolor.models.models import *
+from infer_yolor.yolor.utils.torch_utils import select_device
 import random
 import numpy as np
 from torchvision.transforms import Resize
-from YoloR.yolor.utils.general import non_max_suppression, scale_coords
-import cv2
-# Your imports below
+from infer_yolor.yolor.utils.general import non_max_suppression, scale_coords
+
 
 # --------------------
 # - Class to handle the process parameters
@@ -64,8 +63,6 @@ class YoloRParam(core.CWorkflowTaskParam):
         self.agnostic_nms = bool(param_map["agnostic_nms"])
         self.model_name = str(param_map["model_name"])
         self.update = bool(param_map["update"])
-
-
 
     def getParamMap(self):
         # Send parameters values to Ikomia application
@@ -131,7 +128,6 @@ class YoloRProcess(dataprocess.C2dImageTask):
             with open(Path(os.path.dirname(os.path.realpath(__file__))+"/yolor/data/coco.names")) as f:
                 self.names = f.read().split("\n")[:-1]
             ckpt = torch.load(self.weights)
-        
 
         if param.dataset == "Custom":
             self.cfg = param.cfg
@@ -143,13 +139,12 @@ class YoloRProcess(dataprocess.C2dImageTask):
         if self.model is None or param.update:
             self.model = Darknet(self.cfg.__str__()).to(self.device)
             self.model.eval()
-            #state_dict = {k: v for k, v in ckpt['model'].items() if self.model.state_dict()[k].numel() == v.numel()}
+            # state_dict = {k: v for k, v in ckpt['model'].items() if self.model.state_dict()[k].numel() == v.numel()}
             state_dict = ckpt['model']
             self.model.load_state_dict(state_dict, strict=True)
             print('Transferred %g/%g items from %s' % (len(state_dict), len(self.model.state_dict()), self.weights))  # report
             self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in self.names]
             param.update = False
-
 
         if self.model is not None:
             img_input = self.getInput(0)
@@ -170,7 +165,7 @@ class YoloRProcess(dataprocess.C2dImageTask):
         # Call endTaskRun to finalize process
         self.endTaskRun()
 
-    def detect(self,model,im0,names,device,imgsz,conf_thres, iou_thres, classes, agnostic_nms, graphics_output,
+    def detect(self, model, im0, names, device, imgsz, conf_thres, iou_thres, classes, agnostic_nms, graphics_output,
                numeric_output):
 
         half = device.type != 'cpu'  # half precision only supported on CUDA
@@ -233,13 +228,13 @@ class YoloRProcessFactory(dataprocess.CTaskFactory):
     def __init__(self):
         dataprocess.CTaskFactory.__init__(self)
         # Set process information as string here
-        self.info.name = "YoloR"
+        self.info.name = "infer_yolor"
         self.info.shortDescription = "Inference for YoloR object detection models"
         self.info.description = "Inference for YoloR object detection models." \
                                 "You Only Learn One Representation: Unified Network for Multiple Tasks"
         self.info.authors = "Chien-Yao Wang, I-Hau Yeh, Hong-Yuan Mark Liao"
         # relative path -> as displayed in Ikomia application process tree
-        self.info.path = "Plugins/Python"
+        self.info.path = "Plugins/Python/Detection"
         self.info.version = "1.0.0"
         # self.info.iconPath = "your path to a specific icon"
         self.info.article = "You Only Learn One Representation: Unified Network for Multiple Tasks"
