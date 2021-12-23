@@ -90,7 +90,7 @@ class YoloRProcess(dataprocess.C2dImageTask):
         # Add graphics output
         self.addOutput(dataprocess.CGraphicsOutput())
         # Add numeric output
-        self.addOutput(dataprocess.CNumericIO())
+        self.addOutput(dataprocess.CBlobMeasureIO())
 
         # Create parameters class
         if param is None:
@@ -117,8 +117,8 @@ class YoloRProcess(dataprocess.C2dImageTask):
         if param.dataset == "COCO":
             # Get weight_path
             self.weights = Path(os.path.dirname(os.path.realpath(__file__))+"/yolor/models/"+param.model_name+".pt")
-            pretrained_models = {'yolor_p6' : '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
-                                 'yolor_w6' : '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'}
+            pretrained_models = {'yolor_p6': '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
+                                 'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'}
 
             if not(self.weights.exists()):
                 gdrive_download(id = pretrained_models[param.model_name], name=self.weights.__str__())
@@ -153,14 +153,14 @@ class YoloRProcess(dataprocess.C2dImageTask):
             graphics_output.setNewLayer("YoloR")
             graphics_output.setImageIndex(0)
             # Init numeric output
-            numeric_ouput = self.getOutput(2)
-            numeric_ouput.clearData()
-            numeric_ouput.setOutputType(dataprocess.NumericOutputType.TABLE)
+            numeric_output = self.getOutput(2)
+            numeric_output.clearData()
+
             # Forward input image
             self.forwardInputImage(0, 0)
             with torch.no_grad():
                 self.detect(self.model, src_image, self.names, self.device, param.input_size, param.conf_thres,
-                            param.iou_thres, classes, param.agnostic_nms,graphics_output, numeric_ouput)
+                            param.iou_thres, classes, param.agnostic_nms, graphics_output, numeric_output)
 
         # Call endTaskRun to finalize process
         self.endTaskRun()
@@ -175,7 +175,7 @@ class YoloRProcess(dataprocess.C2dImageTask):
             model.half()  # to FP16
 
         # Run inference
-        h,w,_ = np.shape(im0)
+        h, w, _ = np.shape(im0)
         img = np.ascontiguousarray(im0)
 
         img = torch.from_numpy(img)
@@ -185,19 +185,16 @@ class YoloRProcess(dataprocess.C2dImageTask):
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
 
-        img=img.permute(0,3,1,2)
-        img = Resize((imgsz,imgsz))(img)
+        img=img.permute(0, 3, 1, 2)
+        img = Resize((imgsz, imgsz))(img)
 
         inf_out = model(img)[0]
-        output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres, classes = classes,
-                                     agnostic = agnostic_nms)[0]
+        output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres, classes=classes,
+                                     agnostic=agnostic_nms)[0]
         # Rescale boxes from img_size to im0 size
         whwh = torch.tensor([w / imgsz, h / imgsz, w / imgsz, h / imgsz]).to(device)
         for pred in output:
             pred[:4] *= whwh
-
-        detected_names = []
-        detected_conf = []
 
         for *xyxy, conf, cls in output:
             # Box
@@ -212,11 +209,21 @@ class YoloRProcess(dataprocess.C2dImageTask):
             prop_text = core.GraphicsTextProperty()
             prop_text.font_size = 8
             prop_text.color = self.colors[int(cls)]
+            prop_text.bold = True
             graphics_output.addText(name, float(xyxy[0]), float(xyxy[1]), prop_text)
-            detected_names.append(name)
-            detected_conf.append(conf.item())
-
-        numeric_output.addValueList(detected_conf, "Confidence", detected_names)
+            # object results
+            results = []
+            confidence_data = dataprocess.CObjectMeasure(dataprocess.CMeasure(core.MeasureId.CUSTOM, "Confidence"),
+                                                         conf.item(),
+                                                         graphics_box.getId(),
+                                                         name)
+            box_data = dataprocess.CObjectMeasure(dataprocess.CMeasure(core.MeasureId.BBOX),
+                                                  [float(xyxy[0]), float(xyxy[1]), w, h],
+                                                  graphics_box.getId(),
+                                                  name)
+            results.append(confidence_data)
+            results.append(box_data)
+            numeric_output.addObjectMeasures(results)
 
 
 # --------------------
@@ -235,7 +242,7 @@ class YoloRProcessFactory(dataprocess.CTaskFactory):
         self.info.authors = "Chien-Yao Wang, I-Hau Yeh, Hong-Yuan Mark Liao"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.0.0"
+        self.info.version = "1.1.0"
         self.info.iconPath = "icons/icon.png"
         self.info.article = "You Only Learn One Representation: Unified Network for Multiple Tasks"
         self.info.journal = "Arxiv"
