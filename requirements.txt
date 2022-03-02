@@ -6,7 +6,7 @@ PyYAML>=5.3.1
 scipy>=1.4.1
 tensorboard>=1.5
 --find-links https://download.pytorch.org/whl/cu111/torch_stable.html
-torch==1.8.0
-torchvision==0.9.0
+torch==1.9.0
+torchvision==0.10.0
 tqdm>=4.41.0
 pycocotools==2.0  # COCO mAP
