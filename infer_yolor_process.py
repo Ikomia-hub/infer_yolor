@@ -167,20 +167,13 @@ class YoloRProcess(dataprocess.C2dImageTask):
 
     def detect(self, model, im0, names, device, imgsz, conf_thres, iou_thres, classes, agnostic_nms, graphics_output,
                numeric_output):
-
-        half = device.type != 'cpu'  # half precision only supported on CUDA
-        model.to(device).eval()
-
-        if half:
-            model.half()  # to FP16
-
         # Run inference
         h, w, _ = np.shape(im0)
         img = np.ascontiguousarray(im0)
 
         img = torch.from_numpy(img)
         img = img.to(device)
-        img = img.half() if half else img.float()  # uint8 to fp16/32
+        img = img.float()  # uint8 to fp32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
@@ -188,11 +181,12 @@ class YoloRProcess(dataprocess.C2dImageTask):
         img=img.permute(0, 3, 1, 2)
         img = Resize((imgsz, imgsz))(img)
 
-        inf_out = model(img)[0]
+        inf_out = model(img)[0].to('cpu')
         output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres, classes=classes,
                                      agnostic=agnostic_nms)[0]
+
         # Rescale boxes from img_size to im0 size
-        whwh = torch.tensor([w / imgsz, h / imgsz, w / imgsz, h / imgsz]).to(device)
+        whwh = torch.tensor([w / imgsz, h / imgsz, w / imgsz, h / imgsz]).to('cpu')
         for pred in output:
             pred[:4] *= whwh
 
