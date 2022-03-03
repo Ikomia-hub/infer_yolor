@@ -117,11 +117,16 @@ class YoloRProcess(dataprocess.C2dImageTask):
         if param.dataset == "COCO":
             # Get weight_path
             self.weights = Path(os.path.dirname(os.path.realpath(__file__))+"/yolor/models/"+param.model_name+".pt")
-            pretrained_models = {'yolor_p6': '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
-                                 'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'}
+            """pretrained_models = {'yolor_p6': 'https://github.com/WongKinYiu/yolor/releases/download/weights/yolor-p6-paper-541.pt',
+                                 'yolor_w6': 'https://github.com/WongKinYiu/yolor/releases/download/weights/yolor-w6-paper-555.pt'}"""
+            pretrained_models = {
+                'yolor_p6': '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
+                'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'}
 
             if not(self.weights.exists()):
                 gdrive_download(id = pretrained_models[param.model_name], name=self.weights.__str__())
+            """if not os.path.isfile(self.weights):
+                torch.hub.download_url_to_file(pretrained_models[param.model_name], self.weights)"""
 
             self.cfg = Path(os.path.dirname(os.path.realpath(__file__))+"/yolor/cfg/"+param.model_name+".cfg")
 
@@ -167,13 +172,17 @@ class YoloRProcess(dataprocess.C2dImageTask):
 
     def detect(self, model, im0, names, device, imgsz, conf_thres, iou_thres, classes, agnostic_nms, graphics_output,
                numeric_output):
+        half = False  # for this model half precision does not work in pytorch 1.9
+
+        if half:
+            model.half()  # to FP16
         # Run inference
         h, w, _ = np.shape(im0)
         img = np.ascontiguousarray(im0)
 
         img = torch.from_numpy(img)
         img = img.to(device)
-        img = img.float()  # uint8 to fp32
+        img = img.half() if half else img.float()  # uint8 to fp32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
