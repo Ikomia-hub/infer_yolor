@@ -61,14 +61,15 @@ def gdrive_download(id='1n_oKgR81BJtqk75b00eAjdv03qVCQn2f', name='coco128.zip'):
 
     # Attempt file download
     out = "NUL" if platform.system() == "Windows" else "/dev/null"
-    os.system('curl -c ./cookie -s -L "drive.google.com/uc?export=download&id=%s" > %s ' % (id, out))
+    os.system('curl -L -c cookie "https://docs.google.com/uc?export=download&id=%s" | sed -rn "s/.*confirm=(['
+              '0-9A-Za-z_]+).*/\1/p" > confirm.txt' % (id))
     if os.path.exists('cookie'):  # large file
-        s = 'curl -Lb ./cookie "drive.google.com/uc?export=download&confirm=%s&id=%s" -o %s' % (get_token(), id, name)
+        s = 'curl -L -b cookie -o %s "https://docs.google.com/uc?export=download&id=%s&confirm=%s"' % (name, id, 'confirm.txt')
     else:  # small file
-        s = 'curl -s -L -o %s "drive.google.com/uc?export=download&id=%s"' % (name, id)
+        s = 'curl -s -L -o %s "https://docs.google.com/uc?export=download&id=%s"' % (name, id)
     r = os.system(s)  # execute, capture return
     os.remove('cookie') if os.path.exists('cookie') else None
-
+    os.remove('confirm.txt') if os.path.exists('confirm.txt') else None
     # Error check
     if r != 0:
         os.remove(name) if os.path.exists(name) else None  # remove partial
