@@ -29,6 +29,7 @@ import random
 import numpy as np
 from torchvision.transforms import Resize
 from infer_yolor.yolor.utils.general import non_max_suppression, scale_coords
+from distutils.util import strtobool
 
 
 # --------------------
@@ -60,15 +61,22 @@ class YoloRParam(core.CWorkflowTaskParam):
         self.dataset = str(param_map["dataset"])
         self.conf_thres = float(param_map["conf_thres"])
         self.iou_thres = float(param_map["iou_thresh"])
-        self.agnostic_nms = bool(param_map["agnostic_nms"])
+        self.agnostic_nms = strtobool(param_map["agnostic_nms"])
         self.model_name = str(param_map["model_name"])
-        self.update = bool(param_map["update"])
 
     def getParamMap(self):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
         param_map = core.ParamMap()
         # Example : paramMap["windowSize"] = str(self.windowSize)
+        param_map["input_size"] = str(self.input_size)
+        param_map["cfg"] = self.cfg
+        param_map["weights"] = self.weights
+        param_map["dataset"] = self.dataset
+        param_map["conf_thres"] = str(self.conf_thres)
+        param_map["iou_thresh"] = str(self.iou_thres)
+        param_map["agnostic_nms"] = str(self.agnostic_nms)
+        param_map["model_name"] = self.model_name
         return param_map
 
 
@@ -116,21 +124,22 @@ class YoloRProcess(dataprocess.C2dImageTask):
 
         if param.dataset == "COCO":
             # Get weight_path
-            self.weights = Path(os.path.dirname(os.path.realpath(__file__))+"/yolor/models/"+param.model_name+".pt")
+            self.weights = Path(
+                os.path.dirname(os.path.realpath(__file__)) + "/yolor/models/" + param.model_name + ".pt")
             """pretrained_models = {'yolor_p6': 'https://github.com/WongKinYiu/yolor/releases/download/weights/yolor-p6-paper-541.pt',
                                  'yolor_w6': 'https://github.com/WongKinYiu/yolor/releases/download/weights/yolor-w6-paper-555.pt'}"""
             pretrained_models = {
                 'yolor_p6': '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
                 'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'}
 
-            if not(self.weights.exists()):
-                gdrive_download(id = pretrained_models[param.model_name], name=self.weights.__str__())
+            if not (self.weights.exists()):
+                gdrive_download(id=pretrained_models[param.model_name], name=self.weights.__str__())
             """if not os.path.isfile(self.weights):
                 torch.hub.download_url_to_file(pretrained_models[param.model_name], self.weights)"""
 
-            self.cfg = Path(os.path.dirname(os.path.realpath(__file__))+"/yolor/cfg/"+param.model_name+".cfg")
+            self.cfg = Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/cfg/" + param.model_name + ".cfg")
 
-            with open(Path(os.path.dirname(os.path.realpath(__file__))+"/yolor/data/coco.names")) as f:
+            with open(Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/data/coco.names")) as f:
                 self.names = f.read().split("\n")[:-1]
             ckpt = torch.load(self.weights)
 
@@ -147,7 +156,8 @@ class YoloRProcess(dataprocess.C2dImageTask):
             # state_dict = {k: v for k, v in ckpt['model'].items() if self.model.state_dict()[k].numel() == v.numel()}
             state_dict = ckpt['model']
             self.model.load_state_dict(state_dict, strict=True)
-            print('Transferred %g/%g items from %s' % (len(state_dict), len(self.model.state_dict()), self.weights))  # report
+            print('Transferred %g/%g items from %s' % (
+            len(state_dict), len(self.model.state_dict()), self.weights))  # report
             self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in self.names]
             param.update = False
 
@@ -187,7 +197,7 @@ class YoloRProcess(dataprocess.C2dImageTask):
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
 
-        img=img.permute(0, 3, 1, 2)
+        img = img.permute(0, 3, 1, 2)
         img = Resize((imgsz, imgsz))(img)
 
         inf_out = model(img)[0].to('cpu')
