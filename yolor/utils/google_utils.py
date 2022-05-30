@@ -1,11 +1,10 @@
 # Google utils: https://cloud.google.com/storage/docs/reference/libraries
-
 import os
-import platform
+# import platform
 import subprocess
-import time
+# import time
 from pathlib import Path
-
+import requests
 import torch
 
 
@@ -51,39 +50,59 @@ def attempt_load(weights, map_location=None):
         return model  # return ensemble
 
 
-def gdrive_download(id='1n_oKgR81BJtqk75b00eAjdv03qVCQn2f', name='coco128.zip'):
-    # Downloads a file from Google Drive. from utils.google_utils import *; gdrive_download()
-    t = time.time()
+# def gdrive_download(id='1n_oKgR81BJtqk75b00eAjdv03qVCQn2f', name='coco128.zip'):
+#     # Downloads a file from Google Drive. from utils.google_utils import *; gdrive_download()
+#     t = time.time()
+#
+#     print('Downloading https://drive.google.com/uc?export=download&id=%s as %s... ' % (id, name), end='')
+#     os.remove(name) if os.path.exists(name) else None  # remove existing
+#     os.remove('cookie') if os.path.exists('cookie') else None
+#
+#     # Attempt file download
+#     out = "NUL" if platform.system() == "Windows" else "/dev/null"
+#     os.system('curl -L -c cookie "https://docs.google.com/uc?export=download&id=%s" | sed -rn "s/.*confirm=(['
+#               '0-9A-Za-z_]+).*/\1/p" > confirm.txt' % (id))
+#     if os.path.exists('cookie'):  # large file
+#         s = 'curl -L -b cookie -o %s "https://docs.google.com/uc?export=download&id=%s&confirm=%s"' % (name, id, 'confirm.txt')
+#     else:  # small file
+#         s = 'curl -s -L -o %s "https://docs.google.com/uc?export=download&id=%s"' % (name, id)
+#     r = os.system(s)  # execute, capture return
+#     os.remove('cookie') if os.path.exists('cookie') else None
+#     os.remove('confirm.txt') if os.path.exists('confirm.txt') else None
+#     # Error check
+#     if r != 0:
+#         os.remove(name) if os.path.exists(name) else None  # remove partial
+#         print('Download error ')  # raise Exception('Download error')
+#         return r
+#
+#     # Unzip if archive
+#     if name.endswith('.zip'):
+#         print('unzipping... ', end='')
+#         os.system('unzip -q %s' % name)  # unzip
+#         os.remove(name)  # remove zip to free space
+#
+#     print('Done (%.1fs)' % (time.time() - t))
+#     return r
 
-    print('Downloading https://drive.google.com/uc?export=download&id=%s as %s... ' % (id, name), end='')
-    os.remove(name) if os.path.exists(name) else None  # remove existing
-    os.remove('cookie') if os.path.exists('cookie') else None
 
-    # Attempt file download
-    out = "NUL" if platform.system() == "Windows" else "/dev/null"
-    os.system('curl -L -c cookie "https://docs.google.com/uc?export=download&id=%s" | sed -rn "s/.*confirm=(['
-              '0-9A-Za-z_]+).*/\1/p" > confirm.txt' % (id))
-    if os.path.exists('cookie'):  # large file
-        s = 'curl -L -b cookie -o %s "https://docs.google.com/uc?export=download&id=%s&confirm=%s"' % (name, id, 'confirm.txt')
-    else:  # small file
-        s = 'curl -s -L -o %s "https://docs.google.com/uc?export=download&id=%s"' % (name, id)
-    r = os.system(s)  # execute, capture return
-    os.remove('cookie') if os.path.exists('cookie') else None
-    os.remove('confirm.txt') if os.path.exists('confirm.txt') else None
-    # Error check
-    if r != 0:
-        os.remove(name) if os.path.exists(name) else None  # remove partial
-        print('Download error ')  # raise Exception('Download error')
-        return r
+def gdrive_download(file_id, dst_path):
+    path = os.path.join(os.path.dirname(__file__), "download_model")
+    if not os.path.exists(path):
+        os.makedirs(path)
 
-    # Unzip if archive
-    if name.endswith('.zip'):
-        print('unzipping... ', end='')
-        os.system('unzip -q %s' % name)  # unzip
-        os.remove(name)  # remove zip to free space
+    url = "https://docs.google.com/uc?export=download"
+    session = requests.Session()
+    response = session.get(url, params={'id': file_id, "confirm": "t"}, stream=True)
+    save_response_content(response, dst_path)
 
-    print('Done (%.1fs)' % (time.time() - t))
-    return r
+
+def save_response_content(response, dst_path):
+    CHUNK_SIZE = 32768
+
+    with open(dst_path, "wb") as f:
+        for chunk in response.iter_content(CHUNK_SIZE):
+            if chunk:  # filter out keep-alive new chunks
+                f.write(chunk)
 
 
 def get_token(cookie="./cookie"):

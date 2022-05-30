@@ -21,7 +21,6 @@ import copy
 import torch
 from pathlib import Path
 import os
-
 from infer_yolor.yolor.utils.google_utils import gdrive_download
 from infer_yolor.yolor.models.models import *
 from infer_yolor.yolor.utils.torch_utils import select_device
@@ -93,6 +92,7 @@ class YoloRProcess(dataprocess.C2dImageTask):
         self.colors = None
         self.update = False
         self.cfg = None
+        self.weights = ""
         # Detect if we have a GPU available
         self.device = select_device("cuda" if torch.cuda.is_available() else "cpu")
         # Add graphics output
@@ -126,21 +126,26 @@ class YoloRProcess(dataprocess.C2dImageTask):
             # Get weight_path
             self.weights = Path(
                 os.path.dirname(os.path.realpath(__file__)) + "/yolor/models/" + param.model_name + ".pt")
-            """pretrained_models = {'yolor_p6': 'https://github.com/WongKinYiu/yolor/releases/download/weights/yolor-p6-paper-541.pt',
-                                 'yolor_w6': 'https://github.com/WongKinYiu/yolor/releases/download/weights/yolor-w6-paper-555.pt'}"""
+
+            # Old pre-trained weights
+            # pretrained_models = {'yolor_p6': 'https://github.com/WongKinYiu/yolor/releases/download/weights/yolor-p6-paper-541.pt',
+            #                      'yolor_w6': 'https://github.com/WongKinYiu/yolor/releases/download/weights/yolor-w6-paper-555.pt'}
+
             pretrained_models = {
                 'yolor_p6': '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
                 'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'}
 
             if not (self.weights.exists()):
-                gdrive_download(id=pretrained_models[param.model_name], name=self.weights.__str__())
-            """if not os.path.isfile(self.weights):
-                torch.hub.download_url_to_file(pretrained_models[param.model_name], self.weights)"""
+                gdrive_download(file_id=pretrained_models[param.model_name], dst_path=self.weights.__str__())
+
+            # if not os.path.isfile(self.weights):
+            #     torch.hub.download_url_to_file(pretrained_models[param.model_name], self.weights)
 
             self.cfg = Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/cfg/" + param.model_name + ".cfg")
 
             with open(Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/data/coco.names")) as f:
                 self.names = f.read().split("\n")[:-1]
+
             ckpt = torch.load(self.weights)
 
         if param.dataset == "Custom":
@@ -156,8 +161,8 @@ class YoloRProcess(dataprocess.C2dImageTask):
             # state_dict = {k: v for k, v in ckpt['model'].items() if self.model.state_dict()[k].numel() == v.numel()}
             state_dict = ckpt['model']
             self.model.load_state_dict(state_dict, strict=True)
-            print('Transferred %g/%g items from %s' % (
-            len(state_dict), len(self.model.state_dict()), self.weights))  # report
+            print('Transferred %g/%g items from %s' %
+                  (len(state_dict), len(self.model.state_dict()), self.weights))  # report
             self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in self.names]
             param.update = False
 
@@ -183,9 +188,9 @@ class YoloRProcess(dataprocess.C2dImageTask):
     def detect(self, model, im0, names, device, imgsz, conf_thres, iou_thres, classes, agnostic_nms, graphics_output,
                numeric_output):
         half = False  # for this model half precision does not work in pytorch 1.9
-
         if half:
             model.half()  # to FP16
+
         # Run inference
         h, w, _ = np.shape(im0)
         img = np.ascontiguousarray(im0)
@@ -255,7 +260,7 @@ class YoloRProcessFactory(dataprocess.CTaskFactory):
         self.info.authors = "Chien-Yao Wang, I-Hau Yeh, Hong-Yuan Mark Liao"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.1.1"
+        self.info.version = "1.1.2"
         self.info.iconPath = "icons/icon.png"
         self.info.article = "You Only Learn One Representation: Unified Network for Multiple Tasks"
         self.info.journal = "Arxiv"
