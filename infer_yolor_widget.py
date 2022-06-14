@@ -75,7 +75,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         self.grid_layout.addWidget(self.browse_cfg, row, 1)
 
         # Input size
-        self.spin_size = pyqtutils.append_spin(self.grid_layout, "Input size", self.parameters.input_size)
+        self.spin_size = pyqtutils.append_spin(self.grid_layout, "Input size", self.parameters.input_size, step=2)
 
         # Confidence threshold
         self.spin_confidence = pyqtutils.append_double_spin(self.grid_layout, "Confidence", self.parameters.conf_thres,
