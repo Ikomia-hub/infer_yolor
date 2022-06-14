@@ -136,7 +136,9 @@ class YoloRProcess(dataprocess.C2dImageTask):
                 'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'}
 
             if not (self.weights.exists()):
+                print("Downloading weights...")
                 gdrive_download(file_id=pretrained_models[param.model_name], dst_path=self.weights.__str__())
+                print("Weights downloaded")
 
             # if not os.path.isfile(self.weights):
             #     torch.hub.download_url_to_file(pretrained_models[param.model_name], self.weights)
