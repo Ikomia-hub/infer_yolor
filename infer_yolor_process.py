@@ -95,10 +95,8 @@ class YoloRProcess(dataprocess.C2dImageTask):
         self.weights = ""
         # Detect if we have a GPU available
         self.device = select_device("cuda" if torch.cuda.is_available() else "cpu")
-        # Add graphics output
-        self.addOutput(dataprocess.CGraphicsOutput())
-        # Add numeric output
-        self.addOutput(dataprocess.CBlobMeasureIO())
+        # Add object detection output
+        self.addOutput(dataprocess.CObjectDetectionIO())
 
         # Create parameters class
         if param is None:
@@ -171,24 +169,19 @@ class YoloRProcess(dataprocess.C2dImageTask):
         if self.model is not None:
             img_input = self.getInput(0)
             src_image = img_input.getImage()
-            graphics_output = self.getOutput(1)
-            graphics_output.setNewLayer("YoloR")
-            graphics_output.setImageIndex(0)
-            # Init numeric output
-            numeric_output = self.getOutput(2)
-            numeric_output.clearData()
+            obj_detect_out = self.getOutput(1)
+            obj_detect_out.init("YoloR", 0)
 
             # Forward input image
             self.forwardInputImage(0, 0)
             with torch.no_grad():
                 self.detect(self.model, src_image, self.names, self.device, param.input_size, param.conf_thres,
-                            param.iou_thres, classes, param.agnostic_nms, graphics_output, numeric_output)
+                            param.iou_thres, classes, param.agnostic_nms, obj_detect_out)
 
         # Call endTaskRun to finalize process
         self.endTaskRun()
 
-    def detect(self, model, im0, names, device, imgsz, conf_thres, iou_thres, classes, agnostic_nms, graphics_output,
-               numeric_output):
+    def detect(self, model, im0, names, device, imgsz, conf_thres, iou_thres, classes, agnostic_nms, obj_detect_out):
         half = False  # for this model half precision does not work in pytorch 1.9
         if half:
             model.half()  # to FP16
@@ -220,30 +213,8 @@ class YoloRProcess(dataprocess.C2dImageTask):
             # Box
             w = float(xyxy[2] - xyxy[0])
             h = float(xyxy[3] - xyxy[1])
-            prop_rect = core.GraphicsRectProperty()
-            prop_rect.pen_color = self.colors[int(cls)]
-            graphics_box = graphics_output.addRectangle(float(xyxy[0]), float(xyxy[1]), w, h, prop_rect)
-            graphics_box.setCategory(self.names[int(cls)])
-            # Label
-            name = names[int(cls)]
-            prop_text = core.GraphicsTextProperty()
-            prop_text.font_size = 8
-            prop_text.color = self.colors[int(cls)]
-            prop_text.bold = True
-            graphics_output.addText(name, float(xyxy[0]), float(xyxy[1]), prop_text)
-            # object results
-            results = []
-            confidence_data = dataprocess.CObjectMeasure(dataprocess.CMeasure(core.MeasureId.CUSTOM, "Confidence"),
-                                                         conf.item(),
-                                                         graphics_box.getId(),
-                                                         name)
-            box_data = dataprocess.CObjectMeasure(dataprocess.CMeasure(core.MeasureId.BBOX),
-                                                  [float(xyxy[0]), float(xyxy[1]), w, h],
-                                                  graphics_box.getId(),
-                                                  name)
-            results.append(confidence_data)
-            results.append(box_data)
-            numeric_output.addObjectMeasures(results)
+            obj_detect_out.addObject(names[int(cls)], conf.item(),
+                                     float(xyxy[0]), float(xyxy[1]), w, h, self.colors[int(cls)])
 
 
 # --------------------
