@@ -209,12 +209,14 @@ class YoloRProcess(dataprocess.C2dImageTask):
         for pred in output:
             pred[:4] *= whwh
 
+        index = 0
         for *xyxy, conf, cls in output:
             # Box
             w = float(xyxy[2] - xyxy[0])
             h = float(xyxy[3] - xyxy[1])
-            obj_detect_out.addObject(names[int(cls)], conf.item(),
+            obj_detect_out.addObject(index, names[int(cls)], conf.item(),
                                      float(xyxy[0]), float(xyxy[1]), w, h, self.colors[int(cls)])
+            index += 1
 
 
 # --------------------
