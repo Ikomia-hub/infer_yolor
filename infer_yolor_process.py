@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ikomia import core, dataprocess
+from ikomia import utils, core, dataprocess
 import copy
 import torch
 from pathlib import Path
@@ -28,7 +28,6 @@ import random
 import numpy as np
 from torchvision.transforms import Resize
 from infer_yolor.yolor.utils.general import non_max_suppression, scale_coords
-from distutils.util import strtobool
 
 
 # --------------------
@@ -60,7 +59,7 @@ class YoloRParam(core.CWorkflowTaskParam):
         self.dataset = str(param_map["dataset"])
         self.conf_thres = float(param_map["conf_thres"])
         self.iou_thres = float(param_map["iou_thresh"])
-        self.agnostic_nms = strtobool(param_map["agnostic_nms"])
+        self.agnostic_nms = utils.strtobool(param_map["agnostic_nms"])
         self.model_name = str(param_map["model_name"])
 
     def getParamMap(self):
