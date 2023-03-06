@@ -56,7 +56,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         # Model weights
         self.label_model_path = QLabel("Model path")
         self.browse_model = pyqtutils.BrowseFileWidget(path=self.parameters.weights, tooltip="Select file",
-                                                   mode=QFileDialog.ExistingFile)
+                                                       mode=QFileDialog.ExistingFile)
         row = self.grid_layout.rowCount()
         self.grid_layout.addWidget(self.label_model_path, row, 0)
         self.grid_layout.addWidget(self.browse_model, row, 1)
@@ -66,7 +66,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         # Model cfg
         self.label_cfg = QLabel("Config file")
         self.browse_cfg = pyqtutils.BrowseFileWidget(path=self.parameters.cfg, tooltip="Select file",
-                                                   mode=QFileDialog.ExistingFile)
+                                                     mode=QFileDialog.ExistingFile)
 
         row = self.grid_layout.rowCount()
         self.label_cfg.setVisible(False if self.parameters.dataset == "COCO" else True)
@@ -89,7 +89,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         layout_ptr = qtconversion.PyQtToQt(self.grid_layout)
 
         # Set widget layout
-        self.setLayout(layout_ptr)
+        self.set_layout(layout_ptr)
 
     def on_combo_dataset_changed(self, index):
         if self.combo_dataset.itemText(index) == "COCO":
@@ -106,7 +106,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
             self.browse_cfg.setVisible(True)
             self.label_cfg.setVisible(True)
 
-    def onApply(self):
+    def on_apply(self):
         # Apply button clicked slot
         # Get parameters from widget
         self.parameters.model_name = self.combo_model.currentText()
@@ -121,7 +121,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         self.parameters.update = True
 
         # Send signal to launch the process
-        self.emitApply(self.parameters)
+        self.emit_apply(self.parameters)
 
 
 # --------------------

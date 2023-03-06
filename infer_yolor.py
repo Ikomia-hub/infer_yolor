@@ -28,12 +28,12 @@ class IkomiaPlugin(dataprocess.CPluginProcessInterface):
     def __init__(self):
         dataprocess.CPluginProcessInterface.__init__(self)
 
-    def getProcessFactory(self):
+    def get_process_factory(self):
         # Instantiate process object
         from infer_yolor.infer_yolor_process import YoloRProcessFactory
         return YoloRProcessFactory()
 
-    def getWidgetFactory(self):
+    def get_widget_factory(self):
         # Instantiate associated widget object
         from infer_yolor.infer_yolor_widget import YoloRWidgetFactory
         return YoloRWidgetFactory()
