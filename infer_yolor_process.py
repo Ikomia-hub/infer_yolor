@@ -39,9 +39,10 @@ class YoloRParam(core.CWorkflowTaskParam):
     def __init__(self):
         core.CWorkflowTaskParam.__init__(self)
         # Place default value initialization here
+        self.model_name_or_path = ""
         self.update = False
-        self.cfg = ""
-        self.weights = ""
+        self.config = ""
+        self.model_path = ""
         self.dataset = "COCO"
         self.input_size = 512
         self.conf_thres = 0.25
@@ -52,9 +53,10 @@ class YoloRParam(core.CWorkflowTaskParam):
     def set_values(self, params):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
+        self.model_name_or_path = str(params["model_name_or_path"])
         self.input_size = int(params["input_size"])
-        self.cfg = str(params["cfg"])
-        self.weights = str(params["weights"])
+        self.config = str(params["config"])
+        self.model_path = str(params["model_path"])
         self.dataset = str(params["dataset"])
         self.conf_thres = float(params["conf_thres"])
         self.iou_thres = float(params["iou_thresh"])
@@ -64,9 +66,12 @@ class YoloRParam(core.CWorkflowTaskParam):
     def get_values(self):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
-        params = {"input_size": str(self.input_size), "cfg": self.cfg, "weights": self.weights, "dataset": self.dataset,
-                  "conf_thres": str(self.conf_thres), "iou_thresh": str(self.iou_thres),
-                  "agnostic_nms": str(self.agnostic_nms), "model_name": self.model_name}
+        params = {
+                "model_name_or_path": str(self.model_name_or_path),
+                "input_size": str(self.input_size), "config": self.config, 
+                "model_path": self.model_path, "dataset": self.dataset,
+                "conf_thres": str(self.conf_thres), "iou_thresh": str(self.iou_thres),
+                "agnostic_nms": str(self.agnostic_nms), "model_name": self.model_name}
         return params
 
 
@@ -80,8 +85,8 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
         dataprocess.CObjectDetectionTask.__init__(self, name)
         self.model = None
         self.update = False
-        self.cfg = None
-        self.weights = ""
+        self.config = None
+        self.model_path = ""
         # Detect if we have a GPU available
         self.device = select_device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -107,16 +112,24 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
         # Display all classes
         classes = None
 
+        if param.model_name_or_path != "":
+            if os.path.isfile(param.model_name_or_path):
+                param.dataset ="Custom"
+                param.model_path = param.model_name_or_path
+            else:
+                param.dataset = "COCO"
+                param.model_name = param.model_name_or_path
+
         if param.dataset == "COCO":
             # Get weight_path
-            self.weights = Path(
+            self.model_path = Path(
                 os.path.dirname(os.path.realpath(__file__)) + "/yolor/models/" + param.model_name + ".pt")
 
             pretrained_models = {
                 'yolor_p6': '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
                 'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'}
 
-            if not (self.weights.exists()):
+            if not (self.model_path.exists()):
                 print("Downloading weights...")
                 gdrive_download(file_id=pretrained_models[param.model_name], dst_path=self.weights.__str__())
                 print("Weights downloaded")
@@ -124,26 +137,26 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
             # if not os.path.isfile(self.weights):
             #     torch.hub.download_url_to_file(pretrained_models[param.model_name], self.weights)
 
-            self.cfg = Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/cfg/" + param.model_name + ".cfg")
+            self.config = Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/cfg/" + param.model_name + ".cfg")
             name_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "yolor", "data", "coco.names")
             self.read_class_names(name_file_path)
-            ckpt = torch.load(self.weights)
+            ckpt = torch.load(self.model_path)
 
         if param.dataset == "Custom":
-            self.cfg = param.cfg
-            self.weights = param.weights
-            ckpt = torch.load(self.weights)
+            self.config = param.config
+            self.model_path = param.model_path
+            ckpt = torch.load(self.model_path)
             if 'names' in ckpt.keys():
                 self.set_names(ckpt['names'])
 
         if self.model is None or param.update:
-            self.model = Darknet(self.cfg.__str__()).to(self.device)
+            self.model = Darknet(self.config.__str__()).to(self.device)
             self.model.eval()
             # state_dict = {k: v for k, v in ckpt['model'].items() if self.model.state_dict()[k].numel() == v.numel()}
             state_dict = ckpt['model']
             self.model.load_state_dict(state_dict, strict=True)
             print('Transferred %g/%g items from %s' %
-                  (len(state_dict), len(self.model.state_dict()), self.weights))  # report
+                  (len(state_dict), len(self.model.state_dict()), self.model_path))  # report
             param.update = False
 
         self.emit_step_progress()

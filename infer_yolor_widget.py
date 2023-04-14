@@ -53,9 +53,9 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         self.combo_model.addItem("yolor_w6")
         self.combo_model.setCurrentText(self.parameters.model_name)
 
-        # Model weights
+        # Model model_path
         self.label_model_path = QLabel("Model path")
-        self.browse_model = pyqtutils.BrowseFileWidget(path=self.parameters.weights, tooltip="Select file",
+        self.browse_model = pyqtutils.BrowseFileWidget(path=self.parameters.model_path, tooltip="Select file",
                                                        mode=QFileDialog.ExistingFile)
         row = self.grid_layout.rowCount()
         self.grid_layout.addWidget(self.label_model_path, row, 0)
@@ -64,15 +64,15 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         self.browse_model.setVisible(False if self.parameters.dataset == "COCO" else True)
 
         # Model cfg
-        self.label_cfg = QLabel("Config file")
-        self.browse_cfg = pyqtutils.BrowseFileWidget(path=self.parameters.cfg, tooltip="Select file",
+        self.label_config = QLabel("Config file")
+        self.browse_config = pyqtutils.BrowseFileWidget(path=self.parameters.config, tooltip="Select file",
                                                      mode=QFileDialog.ExistingFile)
 
         row = self.grid_layout.rowCount()
-        self.label_cfg.setVisible(False if self.parameters.dataset == "COCO" else True)
-        self.browse_cfg.setVisible(False if self.parameters.dataset == "COCO" else True)
-        self.grid_layout.addWidget(self.label_cfg, row, 0)
-        self.grid_layout.addWidget(self.browse_cfg, row, 1)
+        self.label_config.setVisible(False if self.parameters.dataset == "COCO" else True)
+        self.browse_config.setVisible(False if self.parameters.dataset == "COCO" else True)
+        self.grid_layout.addWidget(self.label_config, row, 0)
+        self.grid_layout.addWidget(self.browse_config, row, 1)
 
         # Input size
         self.spin_size = pyqtutils.append_spin(self.grid_layout, "Input size", self.parameters.input_size, step=2)
@@ -97,25 +97,25 @@ class YoloRWidget(core.CWorkflowTaskWidget):
             self.browse_model.setVisible(False)
             self.browse_model.set_path(self.combo_model.currentText() + ".pt")
             self.combo_model.setVisible(True)
-            self.browse_cfg.setVisible(False)
-            self.label_cfg.setVisible(False)
+            self.browse_config.setVisible(False)
+            self.label_config.setVisible(False)
         else:
             self.label_model_path.setVisible(True)
             self.browse_model.setVisible(True)
             self.combo_model.setVisible(False)
-            self.browse_cfg.setVisible(True)
-            self.label_cfg.setVisible(True)
+            self.browse_config.setVisible(True)
+            self.label_config.setVisible(True)
 
     def on_apply(self):
         # Apply button clicked slot
         # Get parameters from widget
         self.parameters.model_name = self.combo_model.currentText()
         self.parameters.dataset = self.combo_dataset.currentText()
-        self.parameters.weights = self.browse_model.path
+        self.parameters.model_path = self.browse_model.path
         self.parameters.input_size = self.spin_size.value()
         self.parameters.conf_thres = self.spin_confidence.value()
         self.parameters.iou_thres = self.spin_iou.value()
-        self.parameters.cfg = self.browse_cfg.path
+        self.parameters.config = self.browse_config.path
 
         # update model
         self.parameters.update = True
