@@ -50,7 +50,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         # Models
         self.combo_model = pyqtutils.append_combo(self.grid_layout, "Model")
         self.combo_model.addItem("yolor_p6")
-        self.combo_model.addItem("yolor_w6")
+        #self.combo_model.addItem("yolor_w6")
         self.combo_model.setCurrentText(self.parameters.model_name)
 
         # Model model_path

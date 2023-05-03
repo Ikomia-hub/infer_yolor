@@ -21,10 +21,9 @@ import copy
 import torch
 from pathlib import Path
 import os
-from infer_yolor.yolor.utils.google_utils import gdrive_download
+#from infer_yolor.yolor.utils.google_utils import gdrive_download
 from infer_yolor.yolor.models.models import *
 from infer_yolor.yolor.utils.torch_utils import select_device
-import random
 import numpy as np
 from torchvision.transforms import Resize
 from infer_yolor.yolor.utils.general import non_max_suppression, scale_coords
@@ -123,19 +122,23 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
         if param.dataset == "COCO":
             # Get weight_path
             self.model_path = Path(
-                os.path.dirname(os.path.realpath(__file__)) + "/yolor/models/" + param.model_name + ".pt")
+                os.path.join(os.path.realpath(__file__)), "yolor", "models", param.model_name + ".pt")
 
-            pretrained_models = {
-                'yolor_p6': '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
-                'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'}
+            # pretrained_models = {
+            #     'yolor_p6': '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
+            #     #'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'
+            #     }
 
-            if not (self.model_path.exists()):
+            if not os.path.isfile(self.model_path):
+                model_url = utils.get_model_hub_url() + "/" + self.name + "/yolor_p6.pt"
                 print("Downloading weights...")
-                gdrive_download(file_id=pretrained_models[param.model_name], dst_path=self.weights.__str__())
+                print(self.model_path)
+                self.download(model_url, self.model_path)
                 print("Weights downloaded")
-
-            # if not os.path.isfile(self.weights):
-            #     torch.hub.download_url_to_file(pretrained_models[param.model_name], self.weights)
+                
+                # print("Downloading weights...")
+                # gdrive_download(file_id=pretrained_models[param.model_name], dst_path=self.model_path.__str__())
+                # print("Weights downloaded")
 
             self.config = Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/cfg/" + param.model_name + ".cfg")
             name_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "yolor", "data", "coco.names")
