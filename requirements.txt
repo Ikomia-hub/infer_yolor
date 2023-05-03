@@ -1,12 +1,8 @@
-Cython
-matplotlib>=3.2.2
-numpy>=1.20.0
-Pillow>=8.1.0
-PyYAML>=5.3.1
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.13.1+cu116; python_version >= "3.10"
+torchvision==0.14.1+cu116; python_version >= "3.10"
+torch==1.9.0+cu111; python_version < "3.10"
+torchvision==0.10.0+cu111; python_version < "3.10"
+
 scipy>=1.4.1
-tensorboard>=2.5.0
---find-links https://download.pytorch.org/whl/cu111/torch_stable.html
-torch==1.9.0
-torchvision==0.10.0
-tqdm>=4.41.0
 pycocotools==2.0.4  # COCO mAP
