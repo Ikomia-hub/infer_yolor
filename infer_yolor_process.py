@@ -40,7 +40,7 @@ class YoloRParam(core.CWorkflowTaskParam):
         # Place default value initialization here
         self.model_name_or_path = ""
         self.update = False
-        self.config = ""
+        self.config_file = ""
         self.model_path = ""
         self.dataset = "COCO"
         self.input_size = 512
@@ -54,7 +54,7 @@ class YoloRParam(core.CWorkflowTaskParam):
         # Parameters values are stored as string and accessible like a python dict
         self.model_name_or_path = str(params["model_name_or_path"])
         self.input_size = int(params["input_size"])
-        self.config = str(params["config"])
+        self.config_file = str(params["config_file"])
         self.model_path = str(params["model_path"])
         self.dataset = str(params["dataset"])
         self.conf_thres = float(params["conf_thres"])
@@ -66,11 +66,16 @@ class YoloRParam(core.CWorkflowTaskParam):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
         params = {
-                "model_name_or_path": str(self.model_name_or_path),
-                "input_size": str(self.input_size), "config": self.config, 
-                "model_path": self.model_path, "dataset": self.dataset,
-                "conf_thres": str(self.conf_thres), "iou_thresh": str(self.iou_thres),
-                "agnostic_nms": str(self.agnostic_nms), "model_name": self.model_name}
+            "model_name_or_path": str(self.model_name_or_path),
+            "input_size": str(self.input_size), 
+            "config_file": self.config_file, 
+            "model_path": self.model_path,
+            "dataset": self.dataset,
+            "conf_thres": str(self.conf_thres),
+            "iou_thresh": str(self.iou_thres),
+            "agnostic_nms": str(self.agnostic_nms),
+            "model_name": self.model_name
+            }
         return params
 
 
@@ -84,7 +89,7 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
         dataprocess.CObjectDetectionTask.__init__(self, name)
         self.model = None
         self.update = False
-        self.config = None
+        self.config_file = None
         self.model_path = ""
         # Detect if we have a GPU available
         self.device = select_device("cuda" if torch.cuda.is_available() else "cpu")
@@ -140,20 +145,20 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
                 # gdrive_download(file_id=pretrained_models[param.model_name], dst_path=self.model_path.__str__())
                 # print("Weights downloaded")
 
-            self.config = Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/cfg/" + param.model_name + ".cfg")
+            self.config_file = Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/cfg/" + param.model_name + ".cfg")
             name_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "yolor", "data", "coco.names")
             self.read_class_names(name_file_path)
             ckpt = torch.load(self.model_path)
 
         if param.dataset == "Custom":
-            self.config = param.config
+            self.config_file = param.config_file
             self.model_path = param.model_path
             ckpt = torch.load(self.model_path)
             if 'names' in ckpt.keys():
                 self.set_names(ckpt['names'])
 
         if self.model is None or param.update:
-            self.model = Darknet(self.config.__str__()).to(self.device)
+            self.model = Darknet(self.config_file.__str__()).to(self.device)
             self.model.eval()
             # state_dict = {k: v for k, v in ckpt['model'].items() if self.model.state_dict()[k].numel() == v.numel()}
             state_dict = ckpt['model']

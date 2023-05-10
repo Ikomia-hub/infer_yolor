@@ -65,7 +65,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
 
         # Model cfg
         self.label_config = QLabel("Config file")
-        self.browse_config = pyqtutils.BrowseFileWidget(path=self.parameters.config, tooltip="Select file",
+        self.browse_config = pyqtutils.BrowseFileWidget(path=self.parameters.config_file, tooltip="Select file",
                                                      mode=QFileDialog.ExistingFile)
 
         row = self.grid_layout.rowCount()
@@ -115,7 +115,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         self.parameters.input_size = self.spin_size.value()
         self.parameters.conf_thres = self.spin_confidence.value()
         self.parameters.iou_thres = self.spin_iou.value()
-        self.parameters.config = self.browse_config.path
+        self.parameters.config_file = self.browse_config.path
 
         # update model
         self.parameters.update = True
