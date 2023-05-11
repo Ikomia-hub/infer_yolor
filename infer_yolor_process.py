@@ -38,10 +38,9 @@ class YoloRParam(core.CWorkflowTaskParam):
     def __init__(self):
         core.CWorkflowTaskParam.__init__(self)
         # Place default value initialization here
-        self.model_name_or_path = ""
         self.update = False
         self.config_file = ""
-        self.model_path = ""
+        self.model_weight_file = ""
         self.dataset = "COCO"
         self.input_size = 512
         self.conf_thres = 0.25
@@ -52,10 +51,9 @@ class YoloRParam(core.CWorkflowTaskParam):
     def set_values(self, params):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
-        self.model_name_or_path = str(params["model_name_or_path"])
         self.input_size = int(params["input_size"])
         self.config_file = str(params["config_file"])
-        self.model_path = str(params["model_path"])
+        self.model_weight_file = str(params["model_weight_file"])
         self.dataset = str(params["dataset"])
         self.conf_thres = float(params["conf_thres"])
         self.iou_thres = float(params["iou_thresh"])
@@ -66,10 +64,9 @@ class YoloRParam(core.CWorkflowTaskParam):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
         params = {
-            "model_name_or_path": str(self.model_name_or_path),
             "input_size": str(self.input_size), 
             "config_file": self.config_file, 
-            "model_path": self.model_path,
+            "model_weight_file": self.model_weight_file,
             "dataset": self.dataset,
             "conf_thres": str(self.conf_thres),
             "iou_thresh": str(self.iou_thres),
@@ -90,7 +87,7 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
         self.model = None
         self.update = False
         self.config_file = None
-        self.model_path = ""
+        self.model_weight_file = ""
         # Detect if we have a GPU available
         self.device = select_device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -116,19 +113,13 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
         # Display all classes
         classes = None
 
-        if param.model_name_or_path != "":
-            if os.path.isfile(param.model_name_or_path):
+        if param.model_weight_file != "":
                 param.dataset ="Custom"
-                param.model_path = param.model_name_or_path
-            else:
-                param.dataset = "COCO"
-                param.model_name = param.model_name_or_path
 
         if param.dataset == "COCO":
             # Get weight_path
             self.model_path = Path(
-                os.path.join(os.path.realpath(__file__)), "yolor", "models", param.model_name + ".pt")
-
+                os.path.dirname(os.path.realpath(__file__)), "yolor", "models", param.model_name + ".pt")
             # pretrained_models = {
             #     'yolor_p6': '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
             #     #'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'
@@ -152,7 +143,7 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
 
         if param.dataset == "Custom":
             self.config_file = param.config_file
-            self.model_path = param.model_path
+            self.model_path = param.model_weight_file
             ckpt = torch.load(self.model_path)
             if 'names' in ckpt.keys():
                 self.set_names(ckpt['names'])

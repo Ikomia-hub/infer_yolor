@@ -55,7 +55,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
 
         # Model model_path
         self.label_model_path = QLabel("Model path")
-        self.browse_model = pyqtutils.BrowseFileWidget(path=self.parameters.model_path, tooltip="Select file",
+        self.browse_model = pyqtutils.BrowseFileWidget(path=self.parameters.model_weight_file, tooltip="Select file",
                                                        mode=QFileDialog.ExistingFile)
         row = self.grid_layout.rowCount()
         self.grid_layout.addWidget(self.label_model_path, row, 0)
@@ -111,7 +111,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         # Get parameters from widget
         self.parameters.model_name = self.combo_model.currentText()
         self.parameters.dataset = self.combo_dataset.currentText()
-        self.parameters.model_path = self.browse_model.path
+        self.parameters.model_weight_file = self.browse_model.path
         self.parameters.input_size = self.spin_size.value()
         self.parameters.conf_thres = self.spin_confidence.value()
         self.parameters.iou_thres = self.spin_iou.value()
