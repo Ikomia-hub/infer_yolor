@@ -129,7 +129,7 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
                 model_url = utils.get_model_hub_url() + "/" + self.name + "/yolor_p6.pt"
                 print("Downloading weights...")
                 print(self.model_path)
-                self.download(model_url, self.model_path)
+                self.download(model_url, str(self.model_path))
                 print("Weights downloaded")
                 
                 # print("Downloading weights...")
