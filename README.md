@@ -19,10 +19,10 @@
     </a> 
 </p>
 
-Inference for YoloR object detection models.You Only Learn One Representation: Unified Network for Multiple Tasks
+Inference for YOLOR object detection models.
 
-[Insert illustrative image here. Image must be accessible publicly, in algorithm Github repository for example.
-<img src="images/illustration.png"  alt="Illustrative image" width="30%" height="30%">]
+[Infer YOLOR illustration](https://github.com/WongKinYiu/yolor/raw/main/inference/output/horses.jpg)
+
 
 ## :rocket: Use with Ikomia API
 
@@ -36,20 +36,22 @@ pip install ikomia
 
 #### 2. Create your workflow
 
-[Change the sample image URL to fit algorithm purpose]
 
 ```python
-import ikomia
 from ikomia.dataprocess.workflow import Workflow
+from ikomia.utils.displayIO import display
 
 # Init your workflow
 wf = Workflow()
 
 # Add algorithm
-algo = wf.add_task(name="infer_yolor", auto_connect=True)
+algo = wf.add_task(name="infer_detectron2_detection", auto_connect=True)
 
 # Run on your image  
-wf.run_on(url="example_image.png")
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-dev/notebooks/main/examples/img/img_work.jpg")
+
+# Inpect your result
+display(algo.get_image_with_graphics())
 ```
 
 ## :sunny: Use with Ikomia Studio
@@ -62,29 +64,41 @@ Ikomia Studio offers a friendly UI with the same features as the API.
 
 ## :pencil: Set algorithm parameters
 
-[Explain each algorithm parameters]
 
-[Change the sample image URL to fit algorithm purpose]
+- **model_name** (str) - default 'yolor_p6': Name of the pre-trained model. Other model: "yolor_w6"
+- **iou_thres** (float) - default '0.45': Intersection over Union, degree of overlap between two boxes. [0,1]
+- **conf_thres** (float) default '0.25': Box threshold for the prediction [0,1]
+- **input_size** (int) - default '512': Size of the input image.
+
+- **config_file** (str, *optional*): Path to the config file.
+- **model_weight_file** (str, *optional*): Path to model weights file .pt. 
+
+
+**Parameters** should be in **strings format**  when added to the dictionary.
+
 
 ```python
-import ikomia
 from ikomia.dataprocess.workflow import Workflow
+from ikomia.utils.displayIO import display
 
 # Init your workflow
 wf = Workflow()
 
 # Add algorithm
 algo = wf.add_task(name="infer_yolor", auto_connect=True)
-
 algo.set_parameters({
-    "param1": "value1",
-    "param2": "value2",
-    ...
+    "model_name": "yolor_6",
+    "input_size": "512",
+    "conf_thres": "0.2",
+    "iou_thres": "0.45",
 })
 
-# Run on your image  
-wf.run_on(url="example_image.png")
 
+# Run on your image  
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-dev/notebooks/main/examples/img/img_work.jpg")
+
+# Inpect your result
+display(algo.get_image_with_graphics())
 ```
 
 ## :mag: Explore algorithm outputs
@@ -102,16 +116,12 @@ wf = Workflow()
 algo = wf.add_task(name="infer_yolor", auto_connect=True)
 
 # Run on your image  
-wf.run_on(url="example_image.png")
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-dev/notebooks/main/examples/img/img_work.jpg")
 
 # Iterate over outputs
-for output in algo.get_outputs()
+for output in algo.get_outputs():
     # Print information
     print(output)
     # Export it to JSON
     output.to_json()
 ```
-
-## :fast_forward: Advanced usage 
-
-[optional]
