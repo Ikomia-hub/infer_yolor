@@ -21,7 +21,7 @@
 
 Inference for YOLOR object detection models.
 
-[Infer YOLOR illustration](https://github.com/WongKinYiu/yolor/raw/main/inference/output/horses.jpg)
+![Infer YOLOR illustration](https://github.com/WongKinYiu/yolor/raw/main/inference/output/horses.jpg)
 
 
 ## :rocket: Use with Ikomia API
@@ -45,7 +45,7 @@ from ikomia.utils.displayIO import display
 wf = Workflow()
 
 # Add algorithm
-algo = wf.add_task(name="infer_detectron2_detection", auto_connect=True)
+algo = wf.add_task(name="infer_yolor", auto_connect=True)
 
 # Run on your image  
 wf.run_on(url="https://raw.githubusercontent.com/Ikomia-dev/notebooks/main/examples/img/img_work.jpg")
@@ -69,10 +69,8 @@ Ikomia Studio offers a friendly UI with the same features as the API.
 - **iou_thres** (float) - default '0.45': Intersection over Union, degree of overlap between two boxes. [0,1]
 - **conf_thres** (float) default '0.25': Box threshold for the prediction [0,1]
 - **input_size** (int) - default '512': Size of the input image.
-
 - **config_file** (str, *optional*): Path to the config file.
 - **model_weight_file** (str, *optional*): Path to model weights file .pt. 
-
 
 **Parameters** should be in **strings format**  when added to the dictionary.
 
@@ -92,7 +90,6 @@ algo.set_parameters({
     "conf_thres": "0.2",
     "iou_thres": "0.45",
 })
-
 
 # Run on your image  
 wf.run_on(url="https://raw.githubusercontent.com/Ikomia-dev/notebooks/main/examples/img/img_work.jpg")
