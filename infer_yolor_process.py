@@ -88,6 +88,7 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
         self.update = False
         self.config_file = None
         self.model_weight_file = ""
+        self.model_path = None
         # Detect if we have a GPU available
         self.device = select_device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -123,21 +124,16 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
             # Get weight_path
             self.model_path = Path(
                 os.path.dirname(os.path.realpath(__file__)), "yolor", "models", param.model_name + ".pt")
-            # pretrained_models = {
-            #     'yolor_p6': '1Tdn3yqpZ79X7R1Ql0zNlNScB1Dv9Fp76',
-            #     #'yolor_w6': '1UflcHlN5ERPdhahMivQYCbWWw7d2wY7U'
-            #     }
 
             if not os.path.isfile(self.model_path):
                 model_url = utils.get_model_hub_url() + "/" + self.name + "/yolor_p6.pt"
                 print("Downloading weights...")
-                print(self.model_path)
-                self.download(model_url, str(self.model_path))
+                # self.download(model_url, str(self.model_path))
+                response = requests.get(model_url, stream=True)
+                with open(self.model_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
                 print("Weights downloaded")
-                
-                # print("Downloading weights...")
-                # gdrive_download(file_id=pretrained_models[param.model_name], dst_path=self.model_path.__str__())
-                # print("Weights downloaded")
 
             self.config_file = Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/cfg/" + param.model_name + ".cfg")
             name_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "yolor", "data", "coco.names")
