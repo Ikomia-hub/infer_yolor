@@ -27,6 +27,7 @@ from infer_yolor.yolor.utils.torch_utils import select_device
 import numpy as np
 from torchvision.transforms import Resize
 from infer_yolor.yolor.utils.general import non_max_suppression, scale_coords
+import requests
 
 
 # --------------------
