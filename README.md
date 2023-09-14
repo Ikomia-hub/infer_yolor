@@ -85,7 +85,7 @@ wf = Workflow()
 # Add algorithm
 algo = wf.add_task(name="infer_yolor", auto_connect=True)
 algo.set_parameters({
-    "model_name": "yolor_6",
+    "model_name": "yolor_p6",
     "input_size": "512",
     "conf_thres": "0.2",
     "iou_thres": "0.45",
