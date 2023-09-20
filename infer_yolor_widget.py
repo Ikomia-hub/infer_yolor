@@ -47,12 +47,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         self.combo_dataset.setCurrentIndex(0 if self.parameters.dataset == "COCO" else 1)
         self.combo_dataset.currentIndexChanged.connect(self.on_combo_dataset_changed)
 
-        # Models
-        self.combo_model = pyqtutils.append_combo(self.grid_layout, "Model")
-        self.combo_model.addItem("yolor_p6")
-        #self.combo_model.addItem("yolor_w6")
-        self.combo_model.setCurrentText(self.parameters.model_name)
-
+    
         # Model model_path
         self.label_model_path = QLabel("Model path")
         self.browse_model = pyqtutils.BrowseFileWidget(path=self.parameters.model_weight_file, tooltip="Select file",
@@ -109,7 +104,6 @@ class YoloRWidget(core.CWorkflowTaskWidget):
     def on_apply(self):
         # Apply button clicked slot
         # Get parameters from widget
-        self.parameters.model_name = self.combo_model.currentText()
         self.parameters.dataset = self.combo_dataset.currentText()
         self.parameters.model_weight_file = self.browse_model.path
         self.parameters.input_size = self.spin_size.value()

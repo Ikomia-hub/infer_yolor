@@ -64,8 +64,8 @@ Ikomia Studio offers a friendly UI with the same features as the API.
 
 ## :pencil: Set algorithm parameters
 
+This algorithm uses the YOLOR_p6 model.
 
-- **model_name** (str) - default 'yolor_p6': Name of the pre-trained model. Other model: "yolor_w6"
 - **iou_thres** (float) - default '0.45': Intersection over Union, degree of overlap between two boxes. [0,1]
 - **conf_thres** (float) default '0.25': Box threshold for the prediction [0,1]
 - **input_size** (int) - default '512': Size of the input image.
@@ -85,7 +85,6 @@ wf = Workflow()
 # Add algorithm
 algo = wf.add_task(name="infer_yolor", auto_connect=True)
 algo.set_parameters({
-    "model_name": "yolor_p6",
     "input_size": "512",
     "conf_thres": "0.2",
     "iou_thres": "0.45",

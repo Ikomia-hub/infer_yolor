@@ -47,7 +47,6 @@ class YoloRParam(core.CWorkflowTaskParam):
         self.conf_thres = 0.25
         self.iou_thres = 0.45
         self.agnostic_nms = False
-        self.model_name = "yolor_p6"
 
     def set_values(self, params):
         # Set parameters values from Ikomia application
@@ -59,7 +58,6 @@ class YoloRParam(core.CWorkflowTaskParam):
         self.conf_thres = float(params["conf_thres"])
         self.iou_thres = float(params["iou_thresh"])
         self.agnostic_nms = utils.strtobool(params["agnostic_nms"])
-        self.model_name = str(params["model_name"])
 
     def get_values(self):
         # Send parameters values to Ikomia application
@@ -72,7 +70,6 @@ class YoloRParam(core.CWorkflowTaskParam):
             "conf_thres": str(self.conf_thres),
             "iou_thresh": str(self.iou_thres),
             "agnostic_nms": str(self.agnostic_nms),
-            "model_name": self.model_name
             }
         return params
 
@@ -124,19 +121,18 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
         if param.dataset == "COCO":
             # Get weight_path
             self.model_path = Path(
-                os.path.dirname(os.path.realpath(__file__)), "yolor", "models", param.model_name + ".pt")
+                os.path.dirname(os.path.realpath(__file__)), "yolor", "models", "yolor_p6.pt")
 
             if not os.path.isfile(self.model_path):
                 model_url = utils.get_model_hub_url() + "/" + self.name + "/yolor_p6.pt"
                 print("Downloading weights...")
-                # self.download(model_url, str(self.model_path))
                 response = requests.get(model_url, stream=True)
                 with open(self.model_path, 'wb') as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         f.write(chunk)
                 print("Weights downloaded")
 
-            self.config_file = Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/cfg/" + param.model_name + ".cfg")
+            self.config_file = Path(os.path.dirname(os.path.realpath(__file__)) + "/yolor/cfg/" + "yolor_p6.cfg")
             name_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "yolor", "data", "coco.names")
             self.read_class_names(name_file_path)
             ckpt = torch.load(self.model_path)
@@ -224,7 +220,7 @@ class YoloRProcessFactory(dataprocess.CTaskFactory):
         self.info.authors = "Chien-Yao Wang, I-Hau Yeh, Hong-Yuan Mark Liao"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.1.3"
+        self.info.version = "1.1.4"
         self.info.icon_path = "icons/icon.png"
         self.info.article = "You Only Learn One Representation: Unified Network for Multiple Tasks"
         self.info.journal = "Arxiv"
