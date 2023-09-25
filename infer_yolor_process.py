@@ -164,7 +164,6 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
             img_input = self.get_input(0)
             src_image = img_input.get_image()
             self.model.to(self.device)
-            print(["CUDA?????", self.device, next(self.model.parameters()).is_cuda]) # returns a boolean
             with torch.no_grad():
                 self.detect(src_image, param.input_size, param.conf_thres, param.iou_thres, classes, param.agnostic_nms)
 
