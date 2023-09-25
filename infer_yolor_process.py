@@ -47,6 +47,7 @@ class YoloRParam(core.CWorkflowTaskParam):
         self.conf_thres = 0.25
         self.iou_thres = 0.45
         self.agnostic_nms = False
+        self.cuda = torch.cuda.is_available()
 
     def set_values(self, params):
         # Set parameters values from Ikomia application
@@ -58,6 +59,7 @@ class YoloRParam(core.CWorkflowTaskParam):
         self.conf_thres = float(params["conf_thres"])
         self.iou_thres = float(params["iou_thresh"])
         self.agnostic_nms = utils.strtobool(params["agnostic_nms"])
+        self.cuda = utils.strtobool(params["cuda"])
 
     def get_values(self):
         # Send parameters values to Ikomia application
@@ -70,6 +72,7 @@ class YoloRParam(core.CWorkflowTaskParam):
             "conf_thres": str(self.conf_thres),
             "iou_thresh": str(self.iou_thres),
             "agnostic_nms": str(self.agnostic_nms),
+            "cuda": str(self.cuda)
             }
         return params
 
@@ -88,7 +91,7 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
         self.model_weight_file = ""
         self.model_path = None
         # Detect if we have a GPU available
-        self.device = select_device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cpu")
 
         # Create parameters class
         if param is None:
@@ -145,6 +148,7 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
                 self.set_names(ckpt['names'])
 
         if self.model is None or param.update:
+            self.device = torch.device("cuda") if param.cuda else torch.device("cpu")
             self.model = Darknet(self.config_file.__str__()).to(self.device)
             self.model.eval()
             # state_dict = {k: v for k, v in ckpt['model'].items() if self.model.state_dict()[k].numel() == v.numel()}
@@ -159,7 +163,8 @@ class YoloRProcess(dataprocess.CObjectDetectionTask):
         if self.model is not None:
             img_input = self.get_input(0)
             src_image = img_input.get_image()
-
+            self.model.to(self.device)
+            print(["CUDA?????", self.device, next(self.model.parameters()).is_cuda]) # returns a boolean
             with torch.no_grad():
                 self.detect(src_image, param.input_size, param.conf_thres, param.iou_thres, classes, param.agnostic_nms)
 
@@ -220,7 +225,7 @@ class YoloRProcessFactory(dataprocess.CTaskFactory):
         self.info.authors = "Chien-Yao Wang, I-Hau Yeh, Hong-Yuan Mark Liao"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.1.5"
+        self.info.version = "1.1.6"
         self.info.icon_path = "icons/icon.png"
         self.info.article = "You Only Learn One Representation: Unified Network for Multiple Tasks"
         self.info.journal = "Arxiv"

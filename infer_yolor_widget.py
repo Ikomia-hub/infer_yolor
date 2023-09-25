@@ -21,6 +21,7 @@ from ikomia.utils import pyqtutils, qtconversion
 from infer_yolor.infer_yolor_process import YoloRParam
 # PyQt GUI framework
 from PyQt5.QtWidgets import *
+from torch.cuda import is_available
 
 
 # --------------------
@@ -39,6 +40,10 @@ class YoloRWidget(core.CWorkflowTaskWidget):
 
         # Create layout : QGridLayout by default
         self.grid_layout = QGridLayout()
+
+        # CUDA
+        self.check_cuda = pyqtutils.append_check(
+                        self.grid_layout, "Cuda", self.parameters.cuda and is_available())
 
         # Dataset
         self.combo_dataset = pyqtutils.append_combo(self.grid_layout, "Trained on")
@@ -110,6 +115,7 @@ class YoloRWidget(core.CWorkflowTaskWidget):
         self.parameters.conf_thres = self.spin_confidence.value()
         self.parameters.iou_thres = self.spin_iou.value()
         self.parameters.config_file = self.browse_config.path
+        self.parameters.cuda = self.check_cuda.isChecked()
 
         # update model
         self.parameters.update = True
