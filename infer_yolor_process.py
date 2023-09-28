@@ -219,8 +219,6 @@ class YoloRProcessFactory(dataprocess.CTaskFactory):
         # Set process information as string here
         self.info.name = "infer_yolor"
         self.info.short_description = "Inference for YoloR object detection models"
-        self.info.description = "Inference for YoloR object detection models." \
-                                "You Only Learn One Representation: Unified Network for Multiple Tasks"
         self.info.authors = "Chien-Yao Wang, I-Hau Yeh, Hong-Yuan Mark Liao"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
@@ -233,7 +231,8 @@ class YoloRProcessFactory(dataprocess.CTaskFactory):
         # URL of documentation
         self.info.documentation_link = "https://arxiv.org/abs/2105.04206"
         # Code source repository
-        self.info.repository = "https://github.com/WongKinYiu/yolor"
+        self.info.repository = "https://github.com/Ikomia-hub/infer_yolor"
+        self.info.original_repository = "https://github.com/WongKinYiu/yolor"
         # Keywords used for search
         self.info.keywords = "yolo, inference, pytorch, object, detection"
 
