@@ -235,6 +235,8 @@ class YoloRProcessFactory(dataprocess.CTaskFactory):
         self.info.original_repository = "https://github.com/WongKinYiu/yolor"
         # Keywords used for search
         self.info.keywords = "yolo, inference, pytorch, object, detection"
+        self.info.algo_type = core.AlgoType.INFER
+        self.info.algo_tasks = "OBJECT_DETECTION"
 
     def create(self, param=None):
         # Create process object
