@@ -222,7 +222,7 @@ class YoloRProcessFactory(dataprocess.CTaskFactory):
         self.info.authors = "Chien-Yao Wang, I-Hau Yeh, Hong-Yuan Mark Liao"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.1.6"
+        self.info.version = "1.1.7"
         self.info.icon_path = "icons/icon.png"
         self.info.article = "You Only Learn One Representation: Unified Network for Multiple Tasks"
         self.info.journal = "Arxiv"
